@@ -54,8 +54,6 @@ $config = [
 						'' => 'site/index',
 						'sms' => 'site/sms',
 						'api/customer' => 'api/api/customer',
-						'api/sms/check' => 'api/sms/check',
-						'api/sms/send' => 'api/sms/send',
 					],
 			],
     ],
