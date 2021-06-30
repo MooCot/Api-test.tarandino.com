@@ -24,11 +24,11 @@ class ApiController extends Controller
         $behaviors['authenticator'] = [
             'class' => Bearer::class,
         ];
-        if ($tokenType['type_auth'] === 'Basic') {
+        if ($tokenType['typeAuth'] === 'Basic') {
             $behaviors['authenticator'] = [
                 'class' => Basic::class,
-                'auth' => function ($phone_number, $password) {
-                    $user = User::find()->where(['phone_number' => $phone_number])->one();
+                'auth' => function ($phoneNumber, $password) {
+                    $user = User::find()->where(['phone_number' => $phoneNumber])->one();
                     if (password_verify($password, $user->password) && !empty($user)) {
                         return $user;
                     }
@@ -73,7 +73,7 @@ class ApiController extends Controller
         ]);
 
         $typeAutorisation = $this->auntifTypeToken();
-        if ($typeAutorisation['type_auth'] === 'Basic') {
+        if ($typeAutorisation['typeAuth'] === 'Basic') {
             $headers = Yii::$app->response->headers;
             $headers->add('X-Auth-Token', $user->firebase_token);
             return $this->returnJsonUserIfPhone($user, $card);
@@ -92,10 +92,10 @@ class ApiController extends Controller
             'name' => $restRequestData['name'],
             'surname' => $restRequestData['surname'],
             'password' => $restRequestData['password'],
-            'device_id' => $restRequestData['device_id'],
-            'firebase_token' => $restRequestData['firebase_token'],
+            'deviceId' => $restRequestData['device_id'],
+            'firebaseToken' => $restRequestData['firebase_token'],
         ];
-        $tokenCode = $reqvestDataUser['firebase_token'];
+        $tokenCode = $reqvestDataUser['firebaseToken'];
 
         $user = User::findOne([
             'firebase_token' => $tokenCode,
@@ -122,14 +122,14 @@ class ApiController extends Controller
         }
     }
 
-    // return arr[type_auth, token], возвращаем токен
+    // return arr[typeAuth, token], возвращаем токен
     public function auntifTypeToken()
     {
         $authorization = Yii::$app->request->headers->get('Authorization');
         $token = strstr($authorization, ' ');
-        $type_auth = substr($authorization, 0, -strlen($token));
+        $typeAuth = substr($authorization, 0, -strlen($token));
         return $clearToken = [
-            'type_auth' => $type_auth,
+            'typeAuth' => $typeAuth,
             'token' => $token,
         ];
     }
@@ -139,8 +139,8 @@ class ApiController extends Controller
         $user->name = $reqvestDataUser['name'];
         $user->surname = $reqvestDataUser['surname'];
         $user->password = password_hash($reqvestDataUser['password'], PASSWORD_DEFAULT);
-        $user->device_id = $reqvestDataUser['device_id'];
-        $user->firebase_token = $reqvestDataUser['firebase_token'];
+        $user->device_id = $reqvestDataUser['deviceId'];
+        $user->firebase_token = $reqvestDataUser['firebaseToken'];
         $user->email = '';
         $user->gender = '0';
         $user->birthdate = '';
@@ -151,7 +151,7 @@ class ApiController extends Controller
         $card->save(false);
         $user->save(false);
         $headers = Yii::$app->response->headers;
-        $headers->add('X-Auth-Token', $reqvestDataUser['firebase_token']);
+        $headers->add('X-Auth-Token', $reqvestDataUser['firebaseToken']);
     }
     // return arr[] спц ответ при успешной регистрации
     private function returnJsonUserSing($user, $card)
@@ -238,12 +238,12 @@ class ApiController extends Controller
         return $didg;
     }
     // return спц вывод для error валидации
-    private function returnJsonErorr($code_eror, $text_eror)
+    private function returnJsonErorr($codeEror, $textEror)
     {
         return [
             'success' => false,
-            'code' => $code_eror,
-            'message' => $text_eror,
+            'code' => $codeEror,
+            'message' => $textEror,
         ];
     }
 }

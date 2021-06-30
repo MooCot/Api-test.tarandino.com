@@ -21,14 +21,14 @@ class SmsController extends Controller
         if (Yii::$app->request->isPost) {
             $restRequestData = Yii::$app->request->getBodyParams();
             $confirmSms = [
-                'phone_number' => $restRequestData['phone_number'],
+                'phoneNumber' => $restRequestData['phone_number'],
                 'type' => $restRequestData['type'],
             ];
             if ($confirmSms['type'] === 'activate') {
-                return $this->confirPhone($confirmSms['phone_number']);
+                return $this->confirPhone($confirmSms['phoneNumber']);
             }
             if ($confirmSms['type'] === 'restore') {
-                return $this->recovPassword($confirmSms['phone_number']);
+                return $this->recovPassword($confirmSms['phoneNumber']);
             }
         }
     }
@@ -39,12 +39,12 @@ class SmsController extends Controller
         if (Yii::$app->request->isPost) {
             $restRequestData = Yii::$app->request->getBodyParams();
             $confirmSms = [
-                'phone_number' => $restRequestData['phone_number'],
+                'phoneNumber' => $restRequestData['phone_number'],
                 'code' => $restRequestData['code'],
             ];
 
             $sms = Sms::findOne([
-                'phone_number' => $confirmSms['phone_number'],
+                'phone_number' => $confirmSms['phoneNumber'],
             ]);
 
             if ($sms->count_sms === '5' && !empty($sms)) {
@@ -53,7 +53,7 @@ class SmsController extends Controller
             }
 
             if ($sms->code === $confirmSms['code'] && !empty($sms)) {
-                $this->acceptUser($sms, $confirmSms['phone_number']);
+                $this->acceptUser($sms, $confirmSms['phoneNumber']);
                 return ['success' => true];
             } else {
                 $this->smsCounter($sms);
@@ -184,19 +184,19 @@ class SmsController extends Controller
     }
 
     // return arr спец error
-    private function returnJsonErorr($code_eror, $text_eror)
+    private function returnJsonErorr($codeEror, $textEror)
     {
         return [
             'success' => false,
-            'code' => $code_eror,
-            'message' => $text_eror,
+            'code' => $codeEror,
+            'message' => $textEror,
         ];
     }
 
     // return bool, true при + and lenght == 13
-    public function phoneValidate($phone_num)
+    public function phoneValidate($phoneNum)
     {
-        if (stristr($phone_num, '+', true) === '' && strlen($phone_num) === 13) {
+        if (stristr($phoneNum, '+', true) === '' && strlen($phoneNum) === 13) {
             return true;
         }
         return false;
