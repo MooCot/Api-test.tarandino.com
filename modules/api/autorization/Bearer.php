@@ -18,8 +18,8 @@ class Bearer extends HttpBearerAuth
     public function handleFailure($response)
     {
         return Yii::$app->response->data = [
-            'success' => 'false',
-            'code' => '1003',
+            'success' => false,
+            'code' => 1003,
             'message' => 'Недействительный токен',
         ];
     }

@@ -22,9 +22,10 @@ class SmsController extends Controller
 
 		if (Yii::$app->request->isPost)
 		{	
+			$restRequestData = Yii::$app->request->getBodyParams();
 			$confirmSms = [
-			'phone_number' => $_POST['phone_number'],
-			'type' => $_POST['type']
+			'phone_number' => $restRequestData['phone_number'],
+			'type' => $restRequestData['type']
 			];
 			if ($confirmSms['type'] === 'activate')
 			{
@@ -42,9 +43,10 @@ class SmsController extends Controller
 	{	
 		if (Yii::$app->request->isPost)
 		{	
+			$restRequestData = Yii::$app->request->getBodyParams();
 			$confirmSms = [
-				'phone_number' => $_POST['phone_number'],
-				'code' => $_POST['code']
+				'phone_number' => $restRequestData['phone_number'],
+				'code' => $restRequestData['code']
 			];
 
 			$sms = Sms::findOne([
@@ -55,18 +57,18 @@ class SmsController extends Controller
 			if($sms->count_sms === '5' && !empty($sms))
 			{
 				$sms->delete();
-				return $this->returnJsonErorr('1009', 'Превышено количество попыток ввода кода (5 шт.)');
+				return $this->returnJsonErorr(1009, 'Превышено количество попыток ввода кода (5 шт.)');
 			}
 
 			if ($sms->code === $confirmSms['code'] && !empty($sms))
 			{
 				$this->acceptUser($sms, $confirmSms['phone_number']);
-				return [ 'success' => 'true'];
+				return [ 'success' => true];
 			}
 			else 
 			{
 				$this->smsCounter($sms);
-				return $this->returnJsonErorr('1008', 'Неправильный код подтверждения');
+				return $this->returnJsonErorr(1008, 'Неправильный код подтверждения');
 			}	
 		}
 	}
@@ -112,12 +114,12 @@ class SmsController extends Controller
 
 		if ($user->phone_number===$phone)
 		{
-			return $this->returnJsonErorr('1004', 'Пользователь с таким номером телефона уже зарегистрирован');
+			return $this->returnJsonErorr(1004, 'Пользователь с таким номером телефона уже зарегистрирован');
 		}
 
 		if (!$this->phoneValidate($phone))
 		{
-			return $this->returnJsonErorr('1005', 'Некорректный формат номера телефона');
+			return $this->returnJsonErorr(1005, 'Некорректный формат номера телефона');
 		}
 
 		if($this->ifTimeOut($sms) && !empty($sms))
@@ -128,22 +130,22 @@ class SmsController extends Controller
 			$user->delete();
 			$sms->delete();
 			$this->createSms($phone);
-			return [ 'success' => 'true'];
+			return [ 'success' => true];
 		}
 		if(!$this->ifTimeOut($sms) && !empty($sms))
 		{
-			return $this->returnJsonErorr('1006', 'SMS уже была отправлена (не истёк период ожидания 2 мин.)');
+			return $this->returnJsonErorr(1006, 'SMS уже была отправлена (не истёк период ожидания 2 мин.)');
 		}
 
 		if (empty($user))
 		{
 			$this->createSms($phone);
-			return [ 'success' => 'true'];
+			return [ 'success' => true];
 		}
 
 		else 
 		{ 
-			return $this->returnJsonErorr('1007', 'Не удалось отправить SMS');
+			return $this->returnJsonErorr(1007, 'Не удалось отправить SMS');
 		}
 	}
 
@@ -155,7 +157,7 @@ class SmsController extends Controller
 
 		if ($user->phone_number!==$phone)
 		{
-			return $this->returnJsonErorr('1001', 'Пользователь с таким номером телефона не зарегистрирован');
+			return $this->returnJsonErorr(1001, 'Пользователь с таким номером телефона не зарегистрирован');
 		}
 		
 		if($this->ifTimeOut($sms) && !empty($sms))
@@ -171,11 +173,11 @@ class SmsController extends Controller
 			$sms->sms_timer = time();
 			$sms->save(false);
 			$user->save(false);
-			return [ 'success' => 'true'];
+			return [ 'success' => true];
 		}
 		if(!$this->ifTimeOut($sms) && !empty($sms))
 		{
-			return $this->returnJsonErorr('1006', 'SMS уже была отправлена (не истёк период ожидания 2 мин.)');
+			return $this->returnJsonErorr(1006, 'SMS уже была отправлена (не истёк период ожидания 2 мин.)');
 		}
 
 		if ($user->phone_number===$phone)
@@ -187,11 +189,11 @@ class SmsController extends Controller
 			$sms->sms_timer = time();
 			$sms->save(false);
 			$user->save(false);
-			return [ 'success' => 'true'];
+			return [ 'success' => true];
 		}
 		else 
 		{ 
-			return $this->returnJsonErorr('1007', 'Не удалось отправить SMS');
+			return $this->returnJsonErorr(1007, 'Не удалось отправить SMS');
 		}
 	}
 
@@ -209,7 +211,7 @@ class SmsController extends Controller
 	private function returnJsonErorr($code_eror, $text_eror)
 	{
 		return [
-			'success' => 'false',
+			'success' => false,
 			'code' => $code_eror,
 			'message' => $text_eror,
 		];

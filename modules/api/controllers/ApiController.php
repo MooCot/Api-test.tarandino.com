@@ -37,16 +37,16 @@ class ApiController extends Controller
 										if (!password_verify($password, $user->password) && !empty($user))
 										{
 											Yii::$app->response->data = [
-												'success' => 'false',
-												'code' => '1002',
+												'success' => false,
+												'code' => 1002,
 												'message' => 'Неправильный пароль',
 											];
 										}
 										else 
 										{
 											Yii::$app->response->data = [
-												'success' => 'false',
-												'code' => '1001',
+												'success' => false,
+												'code' => 1001,
 												'message' => 'Пользователь с таким номером телефона не зарегистрирован',
 											];
                     }
@@ -92,12 +92,13 @@ class ApiController extends Controller
 		// return json ответ зарегистрированого user при валидации retorn спц error
 		private function updataSingup()
     {
+				$restRequestData = Yii::$app->request->getBodyParams();
         $reqvestDataUser = [
-            'name' => $_POST['name'],
-            'surname' => $_POST['surname'],
-            'password' => $_POST['password'],
-            'device_id' => $_POST['device_id'],
-            'firebase_token' => $_POST['firebase_token'],
+            'name' => $restRequestData['name'],
+            'surname' => $restRequestData['surname'],
+            'password' => $restRequestData['password'],
+            'device_id' => $restRequestData['device_id'],
+            'firebase_token' => $restRequestData['firebase_token'],
         ];
         $tokenCode = $reqvestDataUser['firebase_token'];
 
@@ -108,18 +109,18 @@ class ApiController extends Controller
             'user_id' => $user->id,
         ]);
         if (empty($card)) {
-            return $this->returnJsonErorr('1023', 'Ошибка выдачи карты');
+            return $this->returnJsonErorr(1023, 'Ошибка выдачи карты');
         }
 
         if ($reqvestDataUser['name'] === '' || $reqvestDataUser['name'] === null) {
-            return $this->returnJsonErorr('1010', 'Не передано обязательное поле (имя) (при регистрации)');
+            return $this->returnJsonErorr(1010, 'Не передано обязательное поле (имя) (при регистрации)');
         }
 
         if ($reqvestDataUser['surname'] === '' || $reqvestDataUser['surname'] === null) {
-            return $this->returnJsonErorr('1011', 'Не передано обязательное поле (фамилия)');
+            return $this->returnJsonErorr(1011, 'Не передано обязательное поле (фамилия)');
         }
         if (strlen($reqvestDataUser['password']) < 4) {
-            return $this->returnJsonErorr('1012', 'Пароль должен быть не менее 4-х символов');
+            return $this->returnJsonErorr(1012, 'Пароль должен быть не менее 4-х символов');
         } else {
             $this->updateUser($user, $card, $reqvestDataUser);
             return $this->returnJsonUserSing($user, $card);
@@ -160,21 +161,21 @@ class ApiController extends Controller
 		// return arr[] спц ответ при успешной регистрации
     private function returnJsonUserSing($user, $card)
     {
-        return ['success' => 'true',
+        return ['success' => true,
             'data' =>
             [
                 'id' => $user->id,
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => $user->gender,
+                'gender' => (int)$user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
                     'barcode' => $card->barcode,
-                    'bonuses_available' => $card->bonuses_available,
-                    'status' => $card->status,
-                    'bonuses_for_next_status' => $card->bonuses_for_next_status,
+                    'bonuses_available' =>(int)$card->bonuses_available,
+                    'status' =>(int)$card->status,
+                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
                 ],
             ],
         ];
@@ -183,21 +184,21 @@ class ApiController extends Controller
 		// return arr[] спц ответ при успешной авторизации по токену
     private function returnJsonUserIfToken($user, $card)
     {
-        return ['success' => 'true',
+        return ['success' => true,
             'data' =>
             [
                 'id' => $user->id,
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => $user->gender,
+                'gender' => (int)$user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
-                    'barcode' => $card->barcode,
-                    'bonuses_available' => $card->bonuses_available,
-                    'status' => $card->status,
-                    'bonuses_for_next_status' => $card->bonuses_for_next_status,
+                    'barcode' => (int)$card->barcode,
+                    'bonuses_available' => (int)$card->bonuses_available,
+                    'status' => (int)$card->status,
+                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
                 ],
             ],
         ];
@@ -206,23 +207,23 @@ class ApiController extends Controller
 		// return arr[] спц ответ при успешной авторизации по номеру и pass
     private function returnJsonUserIfPhone($user, $card)
     {
-        return ['success' => 'true',
+        return ['success' => true,
             'data' =>
             [
                 'id' => $user->id,
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => $user->gender,
+                'gender' => (int)$user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
                     'barcode' => $card->barcode,
-                    'bonuses_available' => $card->bonuses_available,
-                    'status' => $card->status,
-                    'bonuses_for_next_status' => $card->bonuses_for_next_status,
-                    'bonuses_total' => $card->bonuses_total,
-                    'current_status_minimum' => $card->current_status_minimum,
+                    'bonuses_available' => (int)$card->bonuses_available,
+                    'status' => (int)$card->status,
+                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
+                    'bonuses_total' => (int)$card->bonuses_total,
+                    'current_status_minimum' => (int)$card->current_status_minimum,
                 ],
             ],
         ];
@@ -245,7 +246,7 @@ class ApiController extends Controller
     private function returnJsonErorr($code_eror, $text_eror)
     {
         return [
-            'success' => 'false',
+            'success' => false,
             'code' => $code_eror,
             'message' => $text_eror,
         ];
