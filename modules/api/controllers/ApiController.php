@@ -4,28 +4,26 @@ namespace app\modules\api\controllers;
 
 use app\models\Card;
 use app\models\User;
-use app\modules\api\autorization\Bearer;
 use app\modules\api\autorization\Basic;
-use Exception;
+use app\modules\api\autorization\Bearer;
 use Yii;
-use yii\filters\auth\HttpBasicAuth;
-use yii\filters\auth\HttpBearerAuth;
 use yii\web\Controller;
+
 /**
  * Default controller for the `api` module
  */
 
 class ApiController extends Controller
 {
-		// поведение для авторизации, переопределение ответа ошибки по токену в class Bearer, при пароле class Basic(прослойка response) логика тут
+    // поведение для авторизации, переопределение ответа ошибки по токену в class Bearer, при пароле class Basic(прослойка response) логика тут
     public function behaviors()
     {
         $behaviors = parent::behaviors();
         $tokenType = $this->auntifTypeToken();
 
-				$behaviors['authenticator'] = [
-					'class' => Bearer::class,
-				];
+        $behaviors['authenticator'] = [
+            'class' => Bearer::class,
+        ];
         if ($tokenType['type_auth'] === 'Basic') {
             $behaviors['authenticator'] = [
                 'class' => Basic::class,
@@ -33,22 +31,19 @@ class ApiController extends Controller
                     $user = User::find()->where(['phone_number' => $phone_number])->one();
                     if (password_verify($password, $user->password) && !empty($user)) {
                         return $user;
-                    } 
-										if (!password_verify($password, $user->password) && !empty($user))
-										{
-											Yii::$app->response->data = [
-												'success' => false,
-												'code' => 1002,
-												'message' => 'Неправильный пароль',
-											];
-										}
-										else 
-										{
-											Yii::$app->response->data = [
-												'success' => false,
-												'code' => 1001,
-												'message' => 'Пользователь с таким номером телефона не зарегистрирован',
-											];
+                    }
+                    if (!password_verify($password, $user->password) && !empty($user)) {
+                        Yii::$app->response->data = [
+                            'success' => false,
+                            'code' => 1002,
+                            'message' => 'Неправильный пароль',
+                        ];
+                    } else {
+                        Yii::$app->response->data = [
+                            'success' => false,
+                            'code' => 1001,
+                            'message' => 'Пользователь с таким номером телефона не зарегистрирован',
+                        ];
                     }
                 },
             ];
@@ -56,10 +51,10 @@ class ApiController extends Controller
         return $behaviors;
     }
 
-		// action отвечает за вход и обновление данных по методу отправки
-		public function actionCustomer()
+    // action отвечает за вход и обновление данных по методу отправки
+    public function actionCustomer()
     {
-			// return 'ad';
+        // return 'ad';
         if (Yii::$app->request->isGet) {
             $user = Yii::$app->user->identity;
             return $this->Login($user);
@@ -69,8 +64,8 @@ class ApiController extends Controller
         }
     }
 
-		// return json ответ  и отправляем токен зашедшего юзера по методу аунтвефикации 
-		private function Login($user)
+    // return json ответ  и отправляем токен зашедшего юзера по методу аунтвефикации
+    private function Login($user)
     {
 
         $card = Card::findOne([
@@ -89,10 +84,10 @@ class ApiController extends Controller
         }
     }
 
-		// return json ответ зарегистрированого user при валидации retorn спц error
-		private function updataSingup()
+    // return json ответ зарегистрированого user при валидации retorn спц error
+    private function updataSingup()
     {
-				$restRequestData = Yii::$app->request->getBodyParams();
+        $restRequestData = Yii::$app->request->getBodyParams();
         $reqvestDataUser = [
             'name' => $restRequestData['name'],
             'surname' => $restRequestData['surname'],
@@ -127,7 +122,7 @@ class ApiController extends Controller
         }
     }
 
-		// return arr[type_auth, token], возвращаем токен 
+    // return arr[type_auth, token], возвращаем токен
     public function auntifTypeToken()
     {
         $authorization = Yii::$app->request->headers->get('Authorization');
@@ -138,7 +133,7 @@ class ApiController extends Controller
             'token' => $token,
         ];
     }
-		// обновляем пользователя при взодных $reqvestDataUser, оновляем карту
+    // обновляем пользователя при взодных $reqvestDataUser, оновляем карту
     private function updateUser($user, $card, $reqvestDataUser)
     {
         $user->name = $reqvestDataUser['name'];
@@ -158,7 +153,7 @@ class ApiController extends Controller
         $headers = Yii::$app->response->headers;
         $headers->add('X-Auth-Token', $reqvestDataUser['firebase_token']);
     }
-		// return arr[] спц ответ при успешной регистрации
+    // return arr[] спц ответ при успешной регистрации
     private function returnJsonUserSing($user, $card)
     {
         return ['success' => true,
@@ -168,20 +163,20 @@ class ApiController extends Controller
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => (int)$user->gender,
+                'gender' => (int) $user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
                     'barcode' => $card->barcode,
-                    'bonuses_available' =>(int)$card->bonuses_available,
-                    'status' =>(int)$card->status,
-                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
+                    'bonuses_available' => (int) $card->bonuses_available,
+                    'status' => (int) $card->status,
+                    'bonuses_for_next_status' => (int) $card->bonuses_for_next_status,
                 ],
             ],
         ];
     }
 
-		// return arr[] спц ответ при успешной авторизации по токену
+    // return arr[] спц ответ при успешной авторизации по токену
     private function returnJsonUserIfToken($user, $card)
     {
         return ['success' => true,
@@ -191,20 +186,20 @@ class ApiController extends Controller
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => (int)$user->gender,
+                'gender' => (int) $user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
-                    'barcode' => (int)$card->barcode,
-                    'bonuses_available' => (int)$card->bonuses_available,
-                    'status' => (int)$card->status,
-                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
+                    'barcode' => (int) $card->barcode,
+                    'bonuses_available' => (int) $card->bonuses_available,
+                    'status' => (int) $card->status,
+                    'bonuses_for_next_status' => (int) $card->bonuses_for_next_status,
                 ],
             ],
         ];
     }
 
-		// return arr[] спц ответ при успешной авторизации по номеру и pass
+    // return arr[] спц ответ при успешной авторизации по номеру и pass
     private function returnJsonUserIfPhone($user, $card)
     {
         return ['success' => true,
@@ -214,35 +209,35 @@ class ApiController extends Controller
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'gender' => (int)$user->gender,
+                'gender' => (int) $user->gender,
                 'phone_number' => $user->phone_number,
                 'birthdate' => $user->birthdate,
                 'card' => [
                     'barcode' => $card->barcode,
-                    'bonuses_available' => (int)$card->bonuses_available,
-                    'status' => (int)$card->status,
-                    'bonuses_for_next_status' => (int)$card->bonuses_for_next_status,
-                    'bonuses_total' => (int)$card->bonuses_total,
-                    'current_status_minimum' => (int)$card->current_status_minimum,
+                    'bonuses_available' => (int) $card->bonuses_available,
+                    'status' => (int) $card->status,
+                    'bonuses_for_next_status' => (int) $card->bonuses_for_next_status,
+                    'bonuses_total' => (int) $card->bonuses_total,
+                    'current_status_minimum' => (int) $card->current_status_minimum,
                 ],
             ],
         ];
     }
 
-		// включаем поддержку json
+    // включаем поддержку json
     public function beforeAction($action)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         return parent::beforeAction($action);
     }
 
-		// return случ число по дэф 4 длина
+    // return случ число по дэф 4 длина
     public function rendomNumber($digits = 4)
     {
         $didg = rand(pow(10, $digits - 1), pow(10, $digits) - 1);
         return $didg;
     }
-		// return спц вывод для error валидации
+    // return спц вывод для error валидации
     private function returnJsonErorr($code_eror, $text_eror)
     {
         return [
